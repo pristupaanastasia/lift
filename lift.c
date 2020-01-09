@@ -11,6 +11,7 @@ typedef struct			s_lift
 	int					opened;
     int                 floor;
     int                 person;
+    int                 dat[6];
 }						t_lift;
 
 void openorclose(t_lift lift)
@@ -27,7 +28,12 @@ void openorclose(t_lift lift)
 
 t_lift head(t_lift lift, int floor)
 {
+    char *pop;
     int person;
+
+    pop = malloc(7);
+    pop[6] = '\0';
+
     printf("Введите количество пассажиров\n");
     scanf("%d",&person);
     if (person > MAX_PER)
@@ -36,11 +42,49 @@ t_lift head(t_lift lift, int floor)
     }
     else
     {
+        
         lift.opened = 0;
         openorclose(lift);
-        printf("с %d этажа лифт едет на %d\n",lift.floor,floor);
-        sleep(1);
-        lift.floor = floor;
+        while (lift.floor != floor)
+        {
+            printf("датчики \n");
+            while(read(0,pop,6) >0)
+            {
+                lift.dat[0] = pop[0] - 48;
+                lift.dat[1] = pop[1] - 48;
+                lift.dat[2] = pop[2] - 48;
+                lift.dat[3] = pop[3] - 48;
+                lift.dat[4] = pop[4] - 48;
+                lift.dat[5] = pop[5] - 48;
+            }
+            if (lift.floor < floor)
+            {
+                if (lift.dat[lift.floor] == 1 && lift.dat[lift.floor + 1] == 1)
+                {
+                    printf("лифт едет с %d на %d\n", lift.floor, lift.floor + 1);
+                    lift.floor = lift.floor + 1;
+                }
+                else
+                {
+                    printf("авария\n");
+                    return(lift);
+                }
+            }
+            else
+            {
+                if (lift.dat[lift.floor] == 1 && lift.dat[lift.floor - 1] == 1)
+                {
+                    printf("лифт едет с %d на %d\n", lift.floor, lift.floor - 1);
+                    lift.floor = lift.floor - 1;
+                }
+                else
+                {
+                    printf("авария\n");
+                    return(lift);
+                }
+            }
+            
+        }
     }
     return(lift);
 }
@@ -68,6 +112,8 @@ int main(int argc, char **argv)
     lift.floor = 1;
     pop = (char*)malloc(2);
     pop[1] = '\0';
+    lift.dat[0] = 1;
+    lift.dat[1] = 1;
     printf("Нажмите на кнопку\n");
     while(read(0,pop,1) >0)
     {
@@ -92,6 +138,10 @@ int main(int argc, char **argv)
             if (lift.floor == floor)
             {
                 lift = konez(lift);
+            }
+            else
+            {
+                printf("произошла авария, вызываем диспетчера\n");
             }
             sleep(1);     
         }
